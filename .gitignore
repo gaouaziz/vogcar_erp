@@ -1,0 +1,18 @@
+# Dépendances Node
+node_modules/
+dist/
+.nuxt/
+.output/
+
+# Fichiers d'environnement (Sécurité / Mots de passe)
+.env
+.env.development
+.env.production
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Système
+.DS_Store

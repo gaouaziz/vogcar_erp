@@ -1,0 +1,38 @@
+name: CI/CD ERP Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - development
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to OCI Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/vogcar-erp
+            
+            # 1. Récupérer le dernier code depuis GitHub
+            git pull origin ${{ github.ref_name }}
+            
+            # 2. Déterminer l'environnement selon la branche
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              echo "Déploiement PRODUCTION sur le port 8082..."
+              docker compose --env-file .env.production up -d --build
+            else
+              echo "Déploiement DEVELOPMENT sur le port 8081..."
+              docker compose --env-file .env.development up -d --build
+            fi
+            
+            # 3. Nettoyer les anciennes images Docker inutilisées
+            docker image prune -f

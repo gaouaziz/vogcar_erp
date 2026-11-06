@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # 1. Base de données isolée
+  db:
+    image: postgres:16
+    container_name: erp_db_${ENV_NAME}
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_data_${ENV_NAME}:/var/lib/postgresql/data
+
+  # 2. API Backend Express
+  backend:
+    build: ./backend
+    container_name: erp_backend_${ENV_NAME}
+    restart: always
+    environment:
+      - PORT=5000
+      - DB_HOST=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - db
+
+  # 3. Frontend NuxtJS (Exposé sur le port dynamique)
+  frontend:
+    build: ./frontend
+    container_name: erp_frontend_${ENV_NAME}
+    restart: always
+    ports:
+      - "${FRONTEND_PORT}:3000" # Expose 8081 (Dev) ou 8082 (Prod)
+    depends_on:
+      - backend
+
+volumes:
+  # Volumes séparés pour ne pas mélanger les données de Dev et Prod
+  pg_data_dev:
+  pg_data_prod:
