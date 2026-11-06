@@ -1,2 +1,7 @@
-FROM alpine:latest
-CMD ["echo", "Backend temporaire de test actif"]
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --only=production
+COPY . .
+EXPOSE 5000
+CMD ["node", "index.js"]
