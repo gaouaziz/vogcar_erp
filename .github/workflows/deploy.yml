@@ -13,6 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Copie les fichiers dans le dossier vogcar-erp
+      - name: Copy files via SCP to OCI Server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          source: "backend/,frontend/,docker-compose.yml"
+          target: "/home/ubuntu/vogcar-erp" # <-- Mis à jour ici
+
+      # Exécute Docker dans le dossier vogcar-erp
       - name: Deploy to OCI Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -20,12 +31,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/vogcar-erp
+            cd /home/ubuntu/vogcar-erp # <-- Mis à jour ici
             
-            # 1. Récupérer le dernier code depuis GitHub
-            git pull origin ${{ github.ref_name }}
-            
-            # 2. Déterminer l'environnement selon la branche
             if [ "${{ github.ref_name }}" = "main" ]; then
               echo "Déploiement PRODUCTION sur le port 8082..."
               docker compose --env-file .env.production up -d --build
@@ -34,5 +41,4 @@ jobs:
               docker compose --env-file .env.development up -d --build
             fi
             
-            # 3. Nettoyer les anciennes images Docker inutilisées
             docker image prune -f
