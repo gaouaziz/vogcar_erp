@@ -15,7 +15,9 @@ services:
 
   # 2. API Backend Express
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: erp_backend_${ENV_NAME}
     restart: always
     environment:
@@ -29,7 +31,9 @@ services:
 
   # 3. Frontend NuxtJS (Exposé sur le port dynamique)
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: erp_frontend_${ENV_NAME}
     restart: always
     ports:
