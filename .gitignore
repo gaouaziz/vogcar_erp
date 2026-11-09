@@ -14,5 +14,7 @@ dist/
 *.log
 npm-debug.log*
 
-# Système
+# Système & IDE
 .DS_Store
+.vscode/
+.idea/
