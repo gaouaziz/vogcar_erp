@@ -21,7 +21,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           source: "backend/,frontend/,docker-compose.yml"
-          target: "/home/ubuntu/vogcar-erp" # <-- Mis à jour ici
+          target: "/home/ubuntu/vogcar-erp"
 
       # Exécute Docker dans le dossier vogcar-erp
       - name: Deploy to OCI Server via SSH
@@ -31,14 +31,22 @@ jobs:
           username: ubuntu
           key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/vogcar-erp # <-- Mis à jour ici
-            
+            cd /home/ubuntu/vogcar-erp
+
             if [ "${{ github.ref_name }}" = "main" ]; then
-              echo "Déploiement PRODUCTION sur le port 8082..."
+              if [ ! -f .env.production ]; then
+                echo "ERREUR: .env.production est manquant dans /home/ubuntu/vogcar-erp !"
+                exit 1
+              fi
+              echo "Déploiement PRODUCTION (Frontend: 8082, Backend: 5002)..."
               docker compose --env-file .env.production up -d --build
             else
-              echo "Déploiement DEVELOPMENT sur le port 8081..."
+              if [ ! -f .env.development ]; then
+                echo "ERREUR: .env.development est manquant dans /home/ubuntu/vogcar-erp !"
+                exit 1
+              fi
+              echo "Déploiement DEVELOPMENT (Frontend: 8081, Backend: 5001)..."
               docker compose --env-file .env.development up -d --build
             fi
-            
+
             docker image prune -f
