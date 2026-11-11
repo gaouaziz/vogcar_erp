@@ -1,43 +1,61 @@
-version: '3.8'
+name: ${COMPOSE_PROJECT_NAME:-vogcar_erp_${ENV_NAME:-dev}}
 
 services:
-  # 1. Base de données isolée
   db:
-    image: postgres:16
-    container_name: erp_db_${ENV_NAME}
+    image: postgres:15-alpine
+    container_name: erp_db_${ENV_NAME:-dev}
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - pg_data_${ENV_NAME}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-127.0.0.1:5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # 2. API Backend Express
   backend:
-    build: ./backend
-    container_name: erp_backend_${ENV_NAME}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      network: host
+    container_name: erp_backend_${ENV_NAME:-dev}
     restart: always
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
     environment:
       - PORT=5000
+      - NODE_ENV=${NODE_ENV:-development}
       - DB_HOST=db
+      - DB_PORT=5432
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
-  # 3. Frontend NuxtJS (Exposé sur le port dynamique)
   frontend:
-    build: ./frontend
-    container_name: erp_frontend_${ENV_NAME}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: ${BUILD_TARGET:-development}
+      network: host
+    container_name: erp_frontend_${ENV_NAME:-dev}
     restart: always
     ports:
-      - "${FRONTEND_PORT}:3000" # Expose 8081 (Dev) ou 8082 (Prod)
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - BACKEND_URL=http://backend:5000
     depends_on:
       - backend
 
 volumes:
-  # Volumes séparés pour ne pas mélanger les données de Dev et Prod
-  pg_data_dev:
-  pg_data_prod:
+  postgres_data:

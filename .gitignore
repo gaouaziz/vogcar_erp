@@ -10,9 +10,15 @@ dist/
 .env.production
 .env.local
 
+# Docker Local Overrides
+docker-compose.override.yml
+frontend/app_old/
+
 # Logs
 *.log
 npm-debug.log*
 
-# Système
+# Système & IDE
 .DS_Store
+.vscode/
+.idea/
