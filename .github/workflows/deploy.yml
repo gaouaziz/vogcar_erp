@@ -13,6 +13,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Prépare les permissions sur le serveur pour éviter les erreurs de droits avec Docker/SCP
+      - name: Prepare permissions on OCI Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.OCI_SERVER_IP }}
+          username: ubuntu
+          key: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /home/ubuntu/vogcar-erp
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/vogcar-erp
+
       # Copie les fichiers dans le dossier vogcar-erp
       - name: Copy files via SCP to OCI Server
         uses: appleboy/scp-action@v0.1.7
