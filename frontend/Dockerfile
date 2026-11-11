@@ -5,13 +5,13 @@ WORKDIR /app
 # Étape des dépendances
 FROM base AS dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --fetch-retries=5 --fetch-retry-maxtimeout=120000
 
 # Étape Développement (pour le dev local)
 FROM base AS development
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm install --fetch-retries=5 --fetch-retry-maxtimeout=120000
 COPY . .
 EXPOSE 3000
 ENV HOST=0.0.0.0

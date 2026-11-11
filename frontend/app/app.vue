@@ -18,8 +18,8 @@
 
       <div v-else-if="error" class="status-box error">
         <div class="badge badge-error">API Injoignable</div>
-        <p class="details">Impossible de contacter l'API sur <code>{{ apiBaseUrl }}</code>.</p>
-        <p class="hint">Erreur: {{ error.message }}</p>
+        <p class="details">Impossible de contacter le backend API via la route <code>/api/status</code>.</p>
+        <p class="hint">Erreur: {{ error.data?.statusMessage || error.statusMessage || error.message }}</p>
         <button class="btn-retry" @click="refresh()">Réessayer</button>
       </div>
 
@@ -40,8 +40,8 @@
             <span class="value">{{ data?.db_time }}</span>
           </li>
           <li>
-            <span class="label">URL API Configurée :</span>
-            <span class="value font-mono">{{ apiBaseUrl }}</span>
+            <span class="label">Communication API :</span>
+            <span class="value font-mono">/api/status (Proxy interne Nitro)</span>
           </li>
         </ul>
 
@@ -52,13 +52,9 @@
 </template>
 
 <script setup>
-const config = useRuntimeConfig()
-const apiBaseUrl = config.public.apiBase || 'http://localhost:5001'
 const envName = process.env.NODE_ENV || 'development'
 
 const { data, pending, error, refresh } = await useFetch('/api/status', {
-  baseURL: apiBaseUrl,
-  server: false, // Exécuté côté client pour vérifier la connectivité depuis le navigateur
   timeout: 5000,
 })
 </script>

@@ -23,6 +23,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      network: host
     container_name: erp_backend_${ENV_NAME:-dev}
     restart: always
     ports:
@@ -45,15 +46,14 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: ${BUILD_TARGET:-development}
-      args:
-        - NUXT_PUBLIC_API_BASE=${API_BASE_URL}
+      network: host
     container_name: erp_frontend_${ENV_NAME:-dev}
     restart: always
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
-      - NUXT_PUBLIC_API_BASE=${API_BASE_URL}
+      - BACKEND_URL=http://backend:5000
     depends_on:
       - backend
 
